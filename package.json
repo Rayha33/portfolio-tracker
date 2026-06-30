@@ -5,13 +5,14 @@
   "license": "MIT",
   "type": "commonjs",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "start": "node server.js",
     "seed": "node db/seed.js",
     "reseed": "node db/seed.js --force",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node test/smoke.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",

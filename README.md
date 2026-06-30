@@ -6,7 +6,7 @@ expiry-risk analysis, and a realized track record. Runs on your own machine with
 portfolio so it works the moment you start it.
 
 ![license](https://img.shields.io/badge/license-MIT-blue)
-![node](https://img.shields.io/badge/node-%E2%89%A518-43853d)
+![node](https://img.shields.io/badge/node-%E2%89%A520-43853d)
 ![API keys](https://img.shields.io/badge/API%20keys-none-success)
 ![data](https://img.shields.io/badge/market%20data-keyless%20(Yahoo%20%2B%20FRED)-orange)
 ![build](https://img.shields.io/badge/build%20step-none-blueviolet)
@@ -15,6 +15,22 @@ portfolio so it works the moment you start it.
 
 > ⚠️ The bundled positions and trades are **fictional demo data** for
 > illustration only. Nothing here is investment advice.
+
+---
+
+## Contents
+
+- [What it does](#what-it-does)
+- [Screenshots](#screenshots)
+- [Quick start](#quick-start)
+- [How it works](#how-it-works)
+- [Managing positions](#managing-positions)
+- [Tests](#tests)
+- [Configuration](#configuration)
+- [Project structure](#project-structure)
+- [Tech stack](#tech-stack)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -70,7 +86,7 @@ A full track record of everything you've closed.
 
 ## Quick start
 
-Requires **Node.js 18+**.
+Requires **Node.js 20+** (the `better-sqlite3` native module needs 20 or newer).
 
 ```bash
 git clone https://github.com/Rayha33/portfolio-tracker.git
@@ -133,6 +149,8 @@ positions anywhere. There is no telemetry and no account system.
 
 ## Managing positions
 
+<p align="center"><img src="docs/screenshots/add-position.png" alt="Add Position builder" width="520"></p>
+
 - **Add Position** — opens a builder for single options or multi-leg structures
   (verticals, calendars, …). Enter ticker, legs, strikes, expiries, premiums.
 - **Close** a position (full or partial) — it moves to the Realized page and its
@@ -142,6 +160,17 @@ positions anywhere. There is no telemetry and no account system.
 - **Export CSV** — download your open book or trade history.
 
 Every change is a normal API call backed by SQLite, so the data survives restarts.
+
+## Tests
+
+```bash
+npm test
+```
+
+A dependency-free smoke test boots the real server against a throwaway database
+(no network, no API keys), asserts that both pages and the core APIs serve the
+seeded demo data, then exercises the add → close → delete write path. It runs
+clean on Node 20, 22, and 24.
 
 ## Configuration
 
@@ -176,6 +205,7 @@ portfolio-tracker/
 │   ├── portfolio.html     Current Portfolio page
 │   ├── track-record.html  Realized page
 │   └── css/ js/ shared.js …
+├── test/smoke.mjs         boots the server & checks pages + APIs (npm test)
 └── docs/screenshots/      images used in this README
 ```
 
@@ -184,6 +214,12 @@ portfolio-tracker/
 - **Node.js + Express** — tiny JSON API, no framework beyond Express.
 - **better-sqlite3** — fast synchronous SQLite (ships prebuilt binaries).
 - **Vanilla HTML/CSS/JS** front end + **Chart.js** (via CDN). No build step.
+
+## Contributing
+
+Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Please run `npm test` before opening a PR. Notable changes are tracked in
+[CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
