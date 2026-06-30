@@ -1,0 +1,709 @@
+/* Pull in the shared mobile/responsive layer here so EVERY page that links
+   layout.css gets it automatically. This is the clobber-proof path: if a page's
+   HTML is ever re-deployed without its own <link href="/css/responsive.css">,
+   the mobile rules still apply because they live in this shared stylesheet, not
+   in the page. (@import must stay the first rule in the file.) */
+@import url("/css/responsive.css");
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sidebar {
+  width: 216px !important;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex !important;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 50;
+  overflow: hidden;
+  transition: width 0.25s ease;
+}
+
+.sidebar-logo {
+  height: 60px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sidebar-logo-text > span {
+  color: var(--accent);
+}
+
+.sidebar-toggle {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-toggle:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.04);
+}
+
+.sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: none;
+  transition: transform 0.25s;
+}
+
+.sidebar-nav {
+  padding: 16px 12px !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px !important;
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  scrollbar-gutter: stable !important;
+}
+
+.sidebar-link {
+  min-height: 40px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border-left: 3px solid transparent !important;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 14px !important;
+  font-weight: 500;
+  line-height: 20px;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.04);
+}
+
+.sidebar-link.active {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.04);
+  border-left-color: var(--accent) !important;
+}
+
+.sidebar-link svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.sidebar-spacer {
+  flex: 1;
+}
+
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-group-toggle {
+  width: 100%;
+  border: 0;
+  background: none !important;
+  color: var(--text-secondary) !important;
+  font-family: var(--font-body);
+  text-align: left;
+}
+
+.sidebar-group-toggle:hover,
+.sidebar-group.open > .sidebar-group-toggle {
+  color: var(--text-primary) !important;
+  background: rgba(255,255,255,0.04) !important;
+}
+
+.sidebar-chevron {
+  transform: rotate(-90deg);
+  transition: transform 0.2s ease;
+}
+
+.sidebar-group.open .sidebar-chevron {
+  transform: rotate(0deg);
+}
+
+.sidebar-sub-links {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  padding-left: 18px;
+  overflow: hidden;
+}
+
+.sidebar-group.open .sidebar-sub-links {
+  display: flex;
+}
+
+.sidebar-sub-link {
+  min-height: 31px;
+  padding: 7px 12px !important;
+  font-size: 13px !important;
+  line-height: 17px;
+}
+
+.sidebar-sub-link svg {
+  width: 15px !important;
+  height: 15px !important;
+  flex-basis: 15px !important;
+}
+
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.sidebar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sidebar-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.sidebar-user-plan {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+/* ── Sidebar account menu (user footer) ── */
+.sidebar-footer { position: relative; }
+
+button.sidebar-user {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+}
+button.sidebar-user:hover { background: var(--bg-hover, rgba(255,255,255,0.04)); }
+
+.sidebar-account-menu {
+  display: none;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% - 8px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.5));
+  overflow: hidden;
+  z-index: 60;
+}
+.sidebar-account-menu.open { display: block; }
+.sidebar-account-menu a,
+.sidebar-account-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.sidebar-account-menu a:last-child,
+.sidebar-account-menu button:last-child { border-bottom: none; }
+.sidebar-account-menu a:hover,
+.sidebar-account-menu button:hover { background: var(--bg-hover, rgba(255,255,255,0.04)); color: var(--accent); }
+.sidebar-account-menu svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  fill: none;
+  flex-shrink: 0;
+}
+#sidebarLogoutButton:hover { color: var(--negative); }
+
+.sidebar.collapsed .sidebar-account-menu,
+html.fl-sidebar-collapsed .sidebar .sidebar-account-menu { display: none; }
+
+.main {
+  flex: 0 0 calc(100vw - 216px) !important;
+  min-width: 0;
+  margin-left: 216px;
+  width: calc(100vw - 216px);
+  max-width: calc(100vw - 216px);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  transition: margin-left 0.25s ease;
+}
+
+.fl-main {
+  flex: 0 0 calc(100vw - 216px) !important;
+  min-width: 0;
+  margin-left: 216px;
+  width: calc(100vw - 216px);
+  max-width: calc(100vw - 216px);
+  transition: margin-left 0.25s ease, width 0.25s ease, max-width 0.25s ease;
+}
+
+.main > .content,
+.main > .page-content,
+.fl-main > .content,
+.fl-main > .page-content,
+.fl-main > .dashboard-container {
+  width: 100%;
+  max-width: none;
+}
+
+.topbar {
+  height: 60px;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(26,26,26,0.6);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+/* ══════════ TOPBAR COMPONENTS ══════════
+   Injected by js/sidebar.js renderTopbar() on every page. These rules were
+   dropped in the 2026-05-29 layout.css refactor, which left the injected
+   topbar unstyled on any page lacking inline fallbacks: the search-icon and
+   account-menu SVGs had no size/fill cap (rendering as full-size black shapes)
+   and the account dropdown had no display:none (rendering permanently open).
+   Restoring them here makes the topbar render identically on every page. */
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  flex: 1;
+  max-width: 480px;
+  min-width: 0;
+}
+.topbar-search:hover { border-color: var(--accent); }
+.topbar-search svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--text-secondary);
+  stroke-width: 2;
+  fill: none;
+  flex-shrink: 0;
+}
+.topbar-search .topbar-search-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar-search kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 2px 6px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.btn-customize {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 32px;
+  padding: 6px 14px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-customize:hover { border-color: var(--accent); color: var(--accent); }
+.btn-customize svg { width: 14px; height: 14px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+.account-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.account-trigger > svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  fill: none;
+}
+.account-trigger:hover > svg { stroke: var(--text-primary); }
+.account-dropdown {
+  display: none;
+  position: absolute;
+  top: 36px;
+  right: 0;
+  min-width: 184px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  overflow: hidden;
+  z-index: 200;
+}
+.account-dropdown.open { display: block; }
+.account-dropdown a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.account-dropdown a:last-child { border-bottom: none; }
+.account-dropdown a:hover { background: rgba(255,140,0,0.08); color: var(--accent); }
+.account-dropdown a svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: none;
+  flex-shrink: 0;
+}
+.account-dropdown .dd-divider { height: 1px; margin: 0; background: var(--border-color); }
+.account-dropdown a.dd-logout:hover { color: var(--negative); }
+
+[data-theme="light"] .account-dropdown a:hover { background: rgba(255,140,0,0.1); }
+
+.content,
+.page-content {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.sidebar.collapsed,
+html.fl-sidebar-collapsed .sidebar {
+  width: 60px !important;
+  cursor: pointer;
+}
+
+.sidebar.collapsed .sidebar-logo,
+html.fl-sidebar-collapsed .sidebar .sidebar-logo {
+  justify-content: center;
+  padding: 0 8px;
+  gap: 0;
+}
+
+.sidebar.collapsed .sidebar-logo a,
+html.fl-sidebar-collapsed .sidebar .sidebar-logo a,
+.sidebar.collapsed .sidebar-logo-text,
+html.fl-sidebar-collapsed .sidebar .sidebar-logo-text {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-toggle,
+html.fl-sidebar-collapsed .sidebar .sidebar-toggle {
+  margin-left: 0;
+}
+
+.sidebar.collapsed .sidebar-toggle svg,
+html.fl-sidebar-collapsed .sidebar .sidebar-toggle svg {
+  transform: rotate(180deg);
+}
+
+.sidebar.collapsed .sidebar-nav,
+html.fl-sidebar-collapsed .sidebar .sidebar-nav {
+  padding: 12px 8px !important;
+}
+
+.sidebar.collapsed .sidebar-link,
+html.fl-sidebar-collapsed .sidebar .sidebar-link {
+  justify-content: center !important;
+  padding: 10px 0 !important;
+  gap: 0 !important;
+  overflow: hidden;
+  font-size: 0 !important;
+}
+
+.sidebar.collapsed .sidebar-link svg,
+html.fl-sidebar-collapsed .sidebar .sidebar-link svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex-basis: 20px !important;
+}
+
+.sidebar.collapsed .sidebar-sub-links,
+html.fl-sidebar-collapsed .sidebar .sidebar-sub-links,
+.sidebar.collapsed .sidebar-chevron,
+html.fl-sidebar-collapsed .sidebar .sidebar-chevron {
+  display: none !important;
+}
+
+.sidebar.collapsed .sidebar-footer,
+html.fl-sidebar-collapsed .sidebar .sidebar-footer {
+  padding: 8px 6px;
+}
+
+.sidebar.collapsed .sidebar-user,
+html.fl-sidebar-collapsed .sidebar .sidebar-user {
+  justify-content: center;
+  padding: 8px 0;
+  gap: 0;
+}
+
+.sidebar.collapsed .sidebar-user > div:not(.sidebar-avatar),
+html.fl-sidebar-collapsed .sidebar .sidebar-user > div:not(.sidebar-avatar),
+.sidebar.collapsed .sidebar-user > button,
+html.fl-sidebar-collapsed .sidebar .sidebar-user > button {
+  display: none;
+}
+
+.sidebar.collapsed ~ .main,
+html.fl-sidebar-collapsed .main,
+.sidebar.collapsed ~ .fl-main,
+html.fl-sidebar-collapsed .fl-main {
+  margin-left: 60px !important;
+  flex-basis: calc(100vw - 60px) !important;
+  width: calc(100vw - 60px) !important;
+  max-width: calc(100vw - 60px) !important;
+}
+
+[data-theme="light"] .sidebar-link:hover,
+[data-theme="light"] .sidebar-link.active,
+[data-theme="light"] .sidebar-group-toggle:hover,
+[data-theme="light"] .sidebar-group.open > .sidebar-group-toggle {
+  background: rgba(0,0,0,0.04) !important;
+}
+
+[data-theme="light"] .topbar {
+  background: rgba(238,238,238,0.85);
+}
+
+/* ══════════ MOBILE NAV ══════════
+   These rules were dropped during the 2026-05-29 layout.css refactor. Without
+   them the injected #mobileNavOverlay (built in js/sidebar.js) has no positioning
+   and falls into the body flex flow as a ~78px in-flow column, shoving .main right
+   and clipping every page on the right edge (body { overflow-x:hidden }). Restoring
+   position:fixed + display:none takes it out of flow. */
+.mobile-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  z-index: 60;
+}
+
+.mobile-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.mobile-hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.mobile-hamburger.active span:nth-child(2) { opacity: 0; }
+.mobile-hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-sidebar);
+  z-index: 55;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.mobile-nav-overlay.open { display: block; }
+
+.mobile-nav-overlay a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.mobile-nav-overlay a:hover,
+.mobile-nav-overlay a.active {
+  background: rgba(255, 140, 0, 0.1);
+  color: var(--accent);
+}
+
+.mobile-nav-overlay a svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: none;
+  flex-shrink: 0;
+}
+
+.mobile-nav-overlay .mobile-nav-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.mobile-nav-overlay .mobile-nav-footer a {
+  font-size: 13px;
+  padding: 10px 12px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  body {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-hamburger { display: flex; margin-right: 8px; }
+
+  .topbar-search .topbar-search-text,
+  .topbar-search kbd { display: none; }
+  .topbar-search { flex: 0 0 44px; max-width: 44px; min-width: 44px; padding: 7px; justify-content: center; }
+
+  .main,
+  .fl-main,
+  .sidebar.collapsed ~ .main,
+  html.fl-sidebar-collapsed .main,
+  .sidebar.collapsed ~ .fl-main,
+  html.fl-sidebar-collapsed .fl-main {
+    margin-left: 0 !important;
+    flex-basis: 100vw !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: auto;
+    min-height: 100vh;
+  }
+}

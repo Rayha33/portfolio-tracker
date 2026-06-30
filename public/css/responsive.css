@@ -1,0 +1,171 @@
+/*
+ * Portfolio Tracker — Responsive / Mobile Layer
+ * ============================================================
+ * Loaded LAST in <head> (after every page-specific <style>) so its rules win
+ * the cascade at small widths. EVERYTHING here lives inside a max-width media
+ * query, so desktop (>= 769px) renders exactly as before — this file is a
+ * no-op above the breakpoints.
+ *
+ * Link from every page, immediately before </head>:
+ *   <link rel="stylesheet" href="/css/responsive.css">
+ *
+ * Scope of this file = the UNIVERSAL safety net (tables, media, gutters, the
+ * most common wide-grid class names). Page-specific collapses (bespoke grids,
+ * toolbars, section-header actions) live in each page's own <style data-fl-mobile>
+ * block, which is loaded after this file and can override it where needed.
+ *
+ * Breakpoints:  768px = phone/landscape & small tablet   480px = narrow phone
+ */
+
+/* ════════════════════════════════════════════════════════════
+   ≤ 768px  —  phones & small tablets
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Never allow the page to scroll sideways. */
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Media & embeds shrink to fit instead of forcing width. */
+  img, svg image, canvas, video, iframe, embed, object {
+    max-width: 100%;
+  }
+  /* Charts that declare an explicit pixel width still need to flex down. */
+  canvas { height: auto; }
+
+  /* Reclaim the horizontal gutters eaten by desktop padding. */
+  .content,
+  .page-content,
+  .dashboard-container,
+  .main > .content,
+  .fl-main > .content,
+  .main > .page-content,
+  .fl-main > .page-content {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .topbar {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  /* ── DATA TABLES ──────────────────────────────────────────
+     The #1 mobile killer in this app: wide data tables clipped at the right
+     edge (their .content ancestor is overflow-x:hidden). Make the table its
+     own horizontal scroll container and keep cells on one line so columns stay
+     readable. This works whether or not the table sits inside a wrapper. */
+  .content table,
+  .page-content table,
+  .main table,
+  .fl-main table,
+  .table-wrap table,
+  .table-scroll-wrap table,
+  .data-table-wrap table,
+  .positions-table-wrap table,
+  .results-table-wrap table,
+  .table-container table {
+    /* !important so the rule still wins when this file is pulled in EARLY via
+       @import in layout.css (the clobber-proof path) rather than last via <link>. */
+    display: block !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content table th,  .content table td,
+  .page-content table th, .page-content table td,
+  .main table th, .main table td,
+  .fl-main table th, .fl-main table td {
+    white-space: nowrap;
+  }
+  /* Belt-and-suspenders: any explicit table wrapper also scrolls. */
+  .table-wrap,
+  .table-scroll-wrap,
+  .data-table-wrap,
+  .positions-table-wrap,
+  .results-table-wrap,
+  .table-container,
+  .table-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* Tables inside a dedicated scroll wrapper stay real tables; the wrapper
+     above is the single scroll container (avoids nested double-scrollers
+     and content-width header bands). */
+  .table-wrap table,
+  .table-scroll-wrap table,
+  .data-table-wrap table,
+  .positions-table-wrap table,
+  .results-table-wrap table,
+  .table-container table,
+  .table-scroll table {
+    display: table !important;
+  }
+
+  /* ── COMMON WIDE GRIDS ────────────────────────────────────
+     Collapse the most common multi-column grid class names from 3/4/5-up to
+     2-up. (2-up grids are left intact at this width; 480px takes them to 1.) */
+  .kpi-grid,
+  .stats-grid,
+  .summary-grid,
+  .summary-metrics,
+  .metrics-grid,
+  .market-grid,
+  .factor-grid,
+  .cards-grid,
+  .card-grid,
+  .grid-3,
+  .grid-4,
+  .grid-5,
+  .grid-5-1 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Section headers (title + right-side action) must wrap, never clip. */
+  .section-header,
+  .card-header,
+  .panel-header,
+  .widget-header {
+    flex-wrap: wrap;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   ≤ 480px  —  narrow phones
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  .content,
+  .page-content,
+  .dashboard-container,
+  .main > .content,
+  .fl-main > .content,
+  .main > .page-content,
+  .fl-main > .page-content {
+    padding-left: 11px !important;
+    padding-right: 11px !important;
+  }
+
+  /* Everything common goes single-column on a narrow phone. */
+  .kpi-grid,
+  .stats-grid,
+  .summary-grid,
+  .summary-metrics,
+  .metrics-grid,
+  .market-grid,
+  .factor-grid,
+  .cards-grid,
+  .card-grid,
+  .grid-2,
+  .grid-3,
+  .grid-4,
+  .grid-5,
+  .grid-5-1,
+  .grid-2-1,
+  .grid-1-2 {
+    grid-template-columns: minmax(0, 1fr) !important;  /* minmax: min-content (canvas/tables) must not blow out the track */
+  }
+}

@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Local database (regenerated from db/seed.js on first run)
+db/*.db
+db/*.db-shm
+db/*.db-wal
+
+# Environment / secrets
+.env
+
+# Logs & OS cruft
+*.log
+.DS_Store

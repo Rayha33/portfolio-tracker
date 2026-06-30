@@ -1,0 +1,20 @@
+{
+  "name": "options-portfolio-tracker",
+  "version": "1.0.0",
+  "description": "A self-hosted options & equity portfolio tracker with live mark-to-market P&L, expiry-risk analysis, and a realized track record. Single-user, no login, ships with demo data.",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node db/seed.js",
+    "reseed": "node db/seed.js --force",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "express": "^4.21.2"
+  }
+}

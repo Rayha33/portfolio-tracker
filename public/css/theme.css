@@ -1,0 +1,144 @@
+/*
+ * Portfolio Tracker — Theme CSS
+ * ============================================================
+ * 2 theme variable definitions + per-theme component overrides.
+ * Link this file from every HTML page BEFORE any page-specific CSS.
+ *
+ * Usage (in <head>):
+ *   <!-- Fonts (must be in HTML) -->
+ *   <link rel="preconnect" href="https://fonts.googleapis.com">
+ *   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ *   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+ *   <!-- Theme -->
+ *   <link rel="stylesheet" href="/css/theme.css">
+ *
+ * Theme toggle JS (lives in sidebar.js):
+ * -------------------------------------------------------
+ *   var THEMES = ['dark', 'light'];
+ *   function cycleTheme() {
+ *     var html = document.documentElement;
+ *     var current = html.getAttribute('data-theme') || 'dark';
+ *     var idx = THEMES.indexOf(current);
+ *     var next = THEMES[(idx + 1) % THEMES.length];
+ *     html.setAttribute('data-theme', next);
+ *     localStorage.setItem('fl-theme', next);
+ *     updateThemeIcon(next);
+ *   }
+ *   function updateThemeIcon(theme) {
+ *     var btn = document.getElementById('themeToggleBtn');
+ *     if (!btn) return;
+ *     // update icon based on theme as needed
+ *   }
+ *   // Apply saved theme on load (also add inline in <head> to avoid FOUC):
+ *   // <script>
+ *   //   var t = localStorage.getItem('fl-theme') || 'dark';
+ *   //   document.documentElement.setAttribute('data-theme', t);
+ *   // </script>
+ * -------------------------------------------------------
+ */
+
+/* ── Scrollbar defaults (dark) ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: #444444; border-radius: 3px; }
+
+/* ── 1. Dark (baseline / default) ── */
+:root,
+[data-theme="dark"] {
+  --bg-primary: #1a1a1a;
+  --bg-card: #222222;
+  --bg-header: #1e1e1e;
+  --bg-sidebar: #161616;
+  --bg-elevated: #2a2a2a;
+  --bg-hover: rgba(255, 255, 255, 0.04);
+  --text-primary: #d4d4d4;
+  --text-secondary: #888888;
+  --text-tertiary: #5a5a66;
+  --accent: #FF8C00;
+  --accent-hover: #e07d00;
+  --accent-dim: rgba(255, 140, 0, 0.10);
+  --accent-mid: rgba(255, 140, 0, 0.22);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-accent: rgba(255, 140, 0, 0.18);
+  --positive: #5cb87a;
+  --positive-dim: rgba(92, 184, 122, 0.10);
+  --negative: #d46b6b;
+  --negative-dim: rgba(212, 107, 107, 0.10);
+  --warning: #f39c12;
+  --warning-dim: rgba(243, 156, 18, 0.10);
+  --purple: #a855f7;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+/* ── 2. Light (bright) ── */
+[data-theme="light"] {
+  --bg-primary: #eeeeee;
+  --bg-card: #f6f6f6;
+  --bg-header: #e4e4e4;
+  --bg-sidebar: #f0f0f0;
+  --bg-elevated: #ffffff;
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --text-primary: #2a2a2a;
+  --text-secondary: #6b6b6b;
+  --text-tertiary: #8a8a96;
+  --accent: #e07d00;
+  --accent-hover: #cc7000;
+  --accent-dim: rgba(224, 125, 0, 0.10);
+  --accent-mid: rgba(224, 125, 0, 0.20);
+  --border-color: #d0d0d0;
+  --border-accent: rgba(224, 125, 0, 0.25);
+  --positive: #3a9a5c;
+  --positive-dim: rgba(58, 154, 92, 0.10);
+  --negative: #c45454;
+  --negative-dim: rgba(196, 84, 84, 0.10);
+  --warning: #d68910;
+  --warning-dim: rgba(214, 137, 16, 0.10);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+}
+
+/* ── 3. Number-convention utilities (pair with js/fmt.js) ──
+   Site-wide conventions: missing data = en-dash (–) with title="no data";
+   negatives = -1.2% red, positives = +1.2% green (never accounting parens). */
+.fmt-pos { color: var(--positive); }
+.fmt-neg { color: var(--negative); }
+.fmt-null { color: var(--text-tertiary); }
+
+/* Light — sidebar */
+[data-theme="light"] .sidebar { background: #f0f0f0; }
+[data-theme="light"] .sidebar-logo-text > span { color: var(--accent); }
+[data-theme="light"] .sidebar-link.active { background: rgba(0,0,0,0.06); color: var(--text-primary); border-left: 3px solid var(--accent); }
+[data-theme="light"] .sidebar-avatar { background: var(--accent); }
+[data-theme="light"] .sidebar-link:hover { background: rgba(0,0,0,0.06); color: var(--text-primary); }
+[data-theme="light"] .sidebar-group-toggle:hover { background: rgba(0,0,0,0.06) !important; color: var(--text-primary) !important; }
+
+/* Light — topbar */
+[data-theme="light"] .topbar { background: rgba(238,238,238,0.85); backdrop-filter: blur(20px); border-bottom-color: var(--border-color); }
+
+/* Light — agent-feed / command-bar */
+[data-theme="light"] .agent-feed { background: var(--bg-card); }
+[data-theme="light"] .agent-feed-header { background: var(--bg-header); }
+[data-theme="light"] .feed-entry { background: var(--bg-primary); }
+[data-theme="light"] .command-bar { background: rgba(238,238,238,0.95); }
+
+/* Light — scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #bbbbbb; }
+
+/* ── Self-hosted Portfolio Tracker overrides ──────────────────────────────
+   This build has no accounts, billing/tokens, or command palette. Hide the
+   account/billing chrome that the static pages still carry in their inline topbars. */
+.token-circle,
+#tokenCircle,
+.account-trigger,
+#accountDropdown,
+.topbar .btn-customize[title^="Search"] {
+  display: none !important;
+}
