@@ -25,6 +25,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     positions are mirrored; the panel discloses how many non-option lots (e.g.
     shares) weren't shown. A sync never wipes the book on an API error (it
     treats a 200-with-`Errors` soft failure as a failure and mutates nothing).
+  - Spreads are grouped: TradeStation reports each option leg separately, so a
+    long+short pair that is unambiguously a vertical (same expiry) or calendar
+    (same strike) is shown as one two-leg structure. Ambiguous sets (ladders,
+    diagonals, multi-leg) stay as accurate single legs — the sync never invents a
+    combo the broker doesn't report.
   - Credentials and tokens are stored locally in `db/portfolio.db` (git-ignored).
   - New unit test suite (`test/tradestation.test.mjs`) plus TradeStation checks
     added to the smoke test.

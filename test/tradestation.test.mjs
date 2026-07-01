@@ -64,6 +64,62 @@ try {
   eq('no symbol → null', ts.tsPositionToRow({ Quantity: '1' }, '1'), null);
   ok('isOptionPosition true for option, false for stock', ts.isOptionPosition({ Symbol: 'AAPL 261016C300', Quantity: '1' }) === true && ts.isOptionPosition({ Symbol: 'AAPL', Quantity: '100' }) === false);
 
+  console.log('\nmapPositionsToRows (spread grouping):');
+  const vert = ts.mapPositionsToRows([
+    { Symbol: 'ZS 261218C100', LongShort: 'Long', Quantity: '5', AveragePrice: '6' },
+    { Symbol: 'ZS 261218C110', LongShort: 'Short', Quantity: '5', AveragePrice: '2' },
+  ], '1');
+  const vrow = vert.rows[0];
+  const vlegs = vrow ? JSON.parse(vrow.legs_json) : [];
+  ok('vertical: long+short same expiry group into ONE row', vert.rows.length === 1 && vlegs.length === 2, JSON.stringify(vert.rows.map((r) => r.structure)));
+  ok('vertical: label/direction/net-debit', vrow && vrow.structure === 'Call Spread (Vertical)' && vrow.direction === 'long' && vrow.net_debit === 2000 && vrow.ticker === 'ZS', JSON.stringify(vrow));
+
+  const cal = ts.mapPositionsToRows([
+    { Symbol: 'ZC 270116C100', LongShort: 'Long', Quantity: '3', AveragePrice: '8' },
+    { Symbol: 'ZC 261218C100', LongShort: 'Short', Quantity: '3', AveragePrice: '3' },
+  ], '1');
+  ok('calendar: same strike, diff expiry → Call Calendar', cal.rows.length === 1 && cal.rows[0].structure === 'Call Calendar' && cal.rows[0].net_debit === 1500, JSON.stringify(cal.rows[0]));
+
+  const bearPut = ts.mapPositionsToRows([
+    { Symbol: 'ZP 261218P100', LongShort: 'Long', Quantity: '4', AveragePrice: '7' },
+    { Symbol: 'ZP 261218P90', LongShort: 'Short', Quantity: '4', AveragePrice: '3' },
+  ], '1');
+  ok('bear put spread: Put Spread (Vertical) + direction short', bearPut.rows.length === 1 && bearPut.rows[0].structure === 'Put Spread (Vertical)' && bearPut.rows[0].direction === 'short', JSON.stringify(bearPut.rows[0]));
+
+  const single = ts.mapPositionsToRows([{ Symbol: 'ZX 261016C50', LongShort: 'Long', Quantity: '2', AveragePrice: '4' }], '1');
+  ok('lone long call stays a single Long Call row', single.rows.length === 1 && single.rows[0].structure === 'Long Call' && JSON.parse(single.rows[0].legs_json).length === 1);
+
+  const mismatch = ts.mapPositionsToRows([
+    { Symbol: 'ZM 261016C50', LongShort: 'Long', Quantity: '2', AveragePrice: '4' },
+    { Symbol: 'ZM 261016C60', LongShort: 'Short', Quantity: '1', AveragePrice: '2' },
+  ], '1');
+  ok('unequal sizes are NOT paired → 2 single rows', mismatch.rows.length === 2 && mismatch.rows.every((r) => JSON.parse(r.legs_json).length === 1), JSON.stringify(mismatch.rows.map((r) => r.structure)));
+
+  // Ambiguous ladder (2 longs + 2 shorts, same expiry): NOT grouped — left as
+  // accurate singles rather than risk a mispairing that flips net exposure.
+  const ladder = ts.mapPositionsToRows([
+    { Symbol: 'ZT 261218C100', LongShort: 'Long', Quantity: '5', AveragePrice: '6' },
+    { Symbol: 'ZT 261218C130', LongShort: 'Long', Quantity: '5', AveragePrice: '3' },
+    { Symbol: 'ZT 261218C140', LongShort: 'Short', Quantity: '5', AveragePrice: '1' },
+    { Symbol: 'ZT 261218C105', LongShort: 'Short', Quantity: '5', AveragePrice: '2' },
+  ], '1');
+  ok('ambiguous ladder is NOT mis-grouped → 4 single rows', ladder.rows.length === 4 && ladder.rows.every((r) => JSON.parse(r.legs_json).length === 1), JSON.stringify(ladder.rows.map((r) => r.structure + ':' + r.direction)));
+
+  // Unrelated long + short (different strike AND expiry) must NOT be merged into a
+  // fabricated diagonal that would hide the independent short lot / flip exposure.
+  const notDiagonal = ts.mapPositionsToRows([
+    { Symbol: 'ZD 270115C200', LongShort: 'Long', Quantity: '5', AveragePrice: '30' },
+    { Symbol: 'ZD 260821C170', LongShort: 'Short', Quantity: '5', AveragePrice: '40' },
+  ], '1');
+  ok('unrelated long+short (diagonal geometry) stays 2 single rows', notDiagonal.rows.length === 2 && notDiagonal.rows.every((r) => JSON.parse(r.legs_json).length === 1), JSON.stringify(notDiagonal.rows.map((r) => r.structure)));
+
+  const withEq = ts.mapPositionsToRows([
+    { Symbol: 'ZS 261218C100', LongShort: 'Long', Quantity: '5', AveragePrice: '6' },
+    { Symbol: 'ZS 261218C110', LongShort: 'Short', Quantity: '5', AveragePrice: '2' },
+    { Symbol: 'ZEQ', LongShort: 'Long', Quantity: '100', AveragePrice: '50' },
+  ], '1');
+  ok('equity counted as skipped while the spread still groups', withEq.rows.length === 1 && withEq.skippedEquity === 1, JSON.stringify({ rows: withEq.rows.length, skipped: withEq.skippedEquity }));
+
   console.log('\nnormalizeBalances:');
   const bal = ts.normalizeBalances([
     { Equity: '1000', CashBalance: '200', TodaysProfitLoss: '50', BalanceDetail: { UnrealizedProfitLoss: '30' } },
