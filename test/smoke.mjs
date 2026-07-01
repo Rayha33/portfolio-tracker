@@ -109,6 +109,41 @@ async function main() {
     const delRes = await fetch(`${BASE}/api/positions/${newId}`, { method: 'DELETE' });
     ok('DELETE /api/positions/:id → 200', delRes.ok);
     ok('position removed from open book', !(await getJSON('/api/positions')).some((p) => p.ticker === 'SMOKE'));
+
+    console.log('\nTradeStation link API (disconnected, no network):');
+    const tsStatus = await getJSON('/api/tradestation/status');
+    ok('GET /api/tradestation/status → shape', tsStatus && 'connected' in tsStatus && 'needsReconnect' in tsStatus && 'hasCredentials' in tsStatus, JSON.stringify(tsStatus));
+    ok('status starts disconnected', tsStatus.connected === false && tsStatus.hasCredentials === false);
+    ok('status advertises the callback URL', typeof tsStatus.redirectUri === 'string' && /\/api\/tradestation\/callback$/.test(tsStatus.redirectUri), tsStatus.redirectUri);
+
+    const badCreds = await fetch(`${BASE}/api/tradestation/credentials`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: '', client_secret: '' }),
+    });
+    ok('POST /credentials with blanks → 400', badCreds.status === 400);
+
+    const goodCreds = await fetch(`${BASE}/api/tradestation/credentials`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: 'KEY', client_secret: 'SECRET', environment: 'sim' }),
+    });
+    ok('POST /credentials valid → 200', goodCreds.ok);
+    ok('status now hasCredentials', (await getJSON('/api/tradestation/status')).hasCredentials === true);
+
+    // Do NOT follow the redirect (that would hit TradeStation's real server);
+    // just assert we 302 to their consent host with the OAuth params.
+    const connectRedirect = await fetch(`${BASE}/api/tradestation/connect`, { redirect: 'manual' });
+    const location = connectRedirect.headers.get('location') || '';
+    ok('GET /connect → 302 to TradeStation consent', (connectRedirect.status === 302 || connectRedirect.status === 301) && /signin\.tradestation\.com\/authorize/.test(location) && /response_type=code/.test(location), `${connectRedirect.status} ${location}`);
+
+    // OAuth callback guards (offline: both reject before any network call).
+    const cbNoCode = await get('/api/tradestation/callback');
+    ok('GET /callback without code → 400', cbNoCode.status === 400);
+    const cbBadState = await get('/api/tradestation/callback?code=x&state=NOT_THE_STATE');
+    ok('GET /callback with wrong state → 400 (CSRF guard)', cbBadState.status === 400);
+
+    const pfWhileDisconnected = await get('/api/tradestation/portfolio');
+    ok('GET /portfolio while disconnected → 409', pfWhileDisconnected.status === 409);
+
+    const disc = await fetch(`${BASE}/api/tradestation/disconnect`, { method: 'POST' });
+    ok('POST /disconnect → 200', disc.ok);
   } catch (err) {
     failed++;
     console.error('\nUnexpected error:', err?.stack || err);

@@ -608,6 +608,25 @@ td[onclick]:hover, td[style*="cursor:pointer"]:hover { color: #FF8C00 !important
 .ts-token-row { display: flex; gap: 10px; margin-top: 10px; max-width: 560px; flex-wrap: wrap; }
 .ts-token-row input { flex: 1 1 240px; padding: 9px 12px; font-size: 13px; font-family: var(--font-mono); background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; transition: border-color 0.15s; }
 .ts-token-row input:focus { outline: none; border-color: var(--accent); }
+/* Connect form (paste API key + secret, pick environment) */
+.ts-connect-steps .ts-step { margin-bottom: 12px; }
+.ts-connect-steps .ts-step b { color: var(--text-primary); }
+.ts-callback { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.ts-callback code { flex: 1 1 auto; word-break: break-all; }
+.ts-copy { font-size: 11px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.ts-copy:hover { color: var(--text-primary); border-color: var(--accent); }
+.ts-form { display: grid; gap: 10px; max-width: 520px; margin-top: 8px; }
+.ts-form label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: -4px; }
+.ts-form input, .ts-form select { padding: 9px 12px; font-size: 13px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-family: var(--font-mono); }
+.ts-form input:focus, .ts-form select:focus { outline: none; border-color: var(--accent); }
+.ts-form .btn-accent { margin-top: 4px; padding: 10px 16px; justify-self: start; }
+.ts-saved { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; font-size: 13px; color: var(--text-secondary); }
+.ts-saved .btn-accent { padding: 9px 16px; }
+.ts-advanced { margin-top: 14px; }
+.ts-advanced summary { cursor: pointer; font-size: 12px; color: var(--text-secondary); user-select: none; }
+.ts-advanced summary:hover { color: var(--text-primary); }
+.ts-hint { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px; }
+.ts-hint a { color: var(--accent); }
 .ts-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top-color: currentColor; border-radius: 50%; animation: ts-rot 0.8s linear infinite; vertical-align: -2px; margin-right: 6px; }
 @keyframes ts-rot { to { transform: rotate(360deg); } }
 @media (max-width: 768px) {
@@ -5681,6 +5700,7 @@ function toggleCardExpand(btn) {
   var dotEl = document.getElementById('tsConnDot');
   var actionsEl = document.getElementById('tsActions');
   var bodyEl = document.getElementById('tsBody');
+  var lastStatus = null; /* latest /status payload — drives the connect form */
 
   var escText = (typeof esc === 'function') ? esc : function(s) {
     var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML;
@@ -5739,18 +5759,66 @@ function toggleCardExpand(btn) {
     else if (typeof showToast === 'function') showToast(msg, 'error');
   }
 
-  function connectHtml() {
-    return '<details class="ts-connect">' +
-      '<summary>How to connect</summary>' +
-      '<div class="ts-connect-steps">' +
-        '<div><strong style="color:var(--text-primary)">1.</strong> On your Mac, run <code>node scripts/tradestation-auth.js</code> and approve in the browser.</div>' +
-        '<div><strong style="color:var(--text-primary)">2.</strong> Paste the refresh token it prints below and install it.</div>' +
+  /* Advanced fallback: paste a long-lived refresh token directly. */
+  function advancedTokenHtml() {
+    return '<details class="ts-advanced">' +
+      '<summary>Advanced: paste a refresh token instead</summary>' +
+      '<div class="ts-connect-steps" style="margin-top:10px">' +
+        '<div class="ts-hint">Already have a TradeStation refresh token? Paste it here to link without the browser step.</div>' +
         '<div class="ts-token-row">' +
           '<input type="password" id="tsTokenInput" placeholder="Refresh token" autocomplete="off" spellcheck="false">' +
           '<button class="btn-accent" id="tsInstallBtn">Install</button>' +
         '</div>' +
       '</div>' +
     '</details>';
+  }
+
+  /* The full credentials form: paste Client ID + Secret, pick environment. */
+  function credentialsFormHtml() {
+    var st = lastStatus || {};
+    var redirect = escText(st.redirectUri || (location.origin + '/api/tradestation/callback'));
+    var env = st.environment === 'live' ? 'live' : 'sim';
+    return '' +
+      '<div class="ts-connect-steps">' +
+        '<div class="ts-step"><b>1.</b> In TradeStation, create an API Key and add this exact <b>Callback URL</b>:' +
+          '<div class="ts-callback"><code id="tsRedirect">' + redirect + '</code>' +
+            '<button type="button" class="ts-copy" id="tsCopyRedirect">Copy</button></div>' +
+        '</div>' +
+        '<div class="ts-step"><b>2.</b> Paste your API Key details below, choose Simulated or Live, then Connect. ' +
+          'You\'ll approve access on TradeStation once — after that, your open positions and balances update automatically.</div>' +
+        '<div class="ts-form">' +
+          '<label for="tsEnv">Environment</label>' +
+          '<select id="tsEnv">' +
+            '<option value="sim"' + (env === 'sim' ? ' selected' : '') + '>Simulated (paper trading)</option>' +
+            '<option value="live"' + (env === 'live' ? ' selected' : '') + '>Live (real money)</option>' +
+          '</select>' +
+          '<label for="tsClientId">Client ID (API Key)</label>' +
+          '<input type="text" id="tsClientId" placeholder="e.g. AbCdEf123..." autocomplete="off" spellcheck="false">' +
+          '<label for="tsClientSecret">Client Secret</label>' +
+          '<input type="password" id="tsClientSecret" placeholder="Your API key secret" autocomplete="off" spellcheck="false">' +
+          '<button class="btn-accent" id="tsConnectBtn">Connect TradeStation</button>' +
+        '</div>' +
+        advancedTokenHtml() +
+      '</div>';
+  }
+
+  /* Shown when credentials are already saved (e.g. reconnect after expiry): a
+     one-click reconnect, with the full form tucked away for changing keys. */
+  function connectHtml() {
+    var st = lastStatus || {};
+    if (st.hasCredentials) {
+      var envLabel = st.environment === 'live' ? 'Live' : 'Simulated';
+      return '' +
+        '<div class="ts-saved">' +
+          '<span>API key saved · <b>' + envLabel + '</b> environment.</span>' +
+          '<button class="btn-accent" id="tsReconnectBtn">Reconnect TradeStation</button>' +
+        '</div>' +
+        '<details class="ts-advanced">' +
+          '<summary>Use a different API key</summary>' +
+          '<div style="margin-top:12px">' + credentialsFormHtml() + '</div>' +
+        '</details>';
+    }
+    return credentialsFormHtml();
   }
 
   function bind() {
@@ -5761,6 +5829,58 @@ function toggleCardExpand(btn) {
     if ((el = document.getElementById('tsTokenInput'))) {
       el.addEventListener('keydown', function(e) { if (e.key === 'Enter') installToken(); });
     }
+    if ((el = document.getElementById('tsConnectBtn'))) el.onclick = saveAndConnect;
+    if ((el = document.getElementById('tsReconnectBtn'))) el.onclick = reconnect;
+    if ((el = document.getElementById('tsDisconnectBtn'))) el.onclick = disconnect;
+    if ((el = document.getElementById('tsCopyRedirect'))) el.onclick = copyRedirect;
+    if ((el = document.getElementById('tsClientSecret'))) {
+      el.addEventListener('keydown', function(e) { if (e.key === 'Enter') saveAndConnect(); });
+    }
+  }
+
+  /* Save the pasted API key + secret, then hand off to TradeStation consent. */
+  function saveAndConnect() {
+    var btn = document.getElementById('tsConnectBtn');
+    var clientId = ((document.getElementById('tsClientId') || {}).value || '').trim();
+    var clientSecret = ((document.getElementById('tsClientSecret') || {}).value || '').trim();
+    var environment = (document.getElementById('tsEnv') || {}).value || 'sim';
+    if (!clientId || !clientSecret) { showErr('Enter both your Client ID and Client Secret.'); return; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="ts-spinner"></span>Connecting…'; }
+    fetch('/api/tradestation/credentials', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, environment: environment })
+    })
+      .then(function(res) { return res.json().catch(function() { return {}; }).then(function(j) { return { res: res, j: j }; }); })
+      .then(function(r) {
+        if (r.res.ok) { window.location = '/api/tradestation/connect'; return; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Connect TradeStation'; }
+        showErr((r.j && (r.j.error || r.j.message)) || ('Could not save credentials (HTTP ' + r.res.status + ')'));
+      })
+      .catch(function(e) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Connect TradeStation'; }
+        showErr('Connect failed: ' + e.message);
+      });
+  }
+
+  /* Credentials already saved → straight to consent. */
+  function reconnect() { window.location = '/api/tradestation/connect'; }
+
+  function disconnect() {
+    if (typeof confirm === 'function' && !confirm('Disconnect TradeStation? Your open positions will stop updating automatically.')) return;
+    fetch('/api/tradestation/disconnect', { method: 'POST', credentials: 'include' })
+      .then(function() { if (typeof showToast === 'function') showToast('TradeStation disconnected.', 'success'); init(); })
+      .catch(function(e) { showErr('Disconnect failed: ' + e.message); });
+  }
+
+  function copyRedirect() {
+    var code = document.getElementById('tsRedirect');
+    if (!code) return;
+    var text = code.textContent || '';
+    var done = function() { if (typeof showToast === 'function') showToast('Callback URL copied.', 'success'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function() {});
+    else { try { var r = document.createRange(); r.selectNode(code); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); document.execCommand('copy'); done(); } catch (e) {} }
   }
 
   /* ── render states ── */
@@ -5790,7 +5910,8 @@ function toggleCardExpand(btn) {
     actionsEl.innerHTML =
       (lastSync ? '<span class="ts-caption">Last sync ' + lastSync + '</span>' : '') +
       '<button class="btn-outline" id="tsSyncBtn">Sync now</button>' +
-      '<button class="btn-accent" id="tsDownloadBtn">Download Trade Monitor (Excel)</button>';
+      '<button class="btn-accent" id="tsDownloadBtn">Download Trade Monitor (Excel)</button>' +
+      '<button class="btn-outline" id="tsDisconnectBtn">Disconnect</button>';
 
     var html = '';
     if (pf) {
@@ -5798,25 +5919,30 @@ function toggleCardExpand(btn) {
       var equity = sumPick(bal, ['equity', 'Equity', 'accountEquity', 'account_equity']);
       var cash = sumPick(bal, ['cash', 'Cash', 'cashBalance', 'cash_balance']);
       var todays = sumPick(bal, ['todaysPl', 'todays_pl', 'todaysPL', 'TodaysProfitLoss']);
-      var dayReal = sumPick(bal, ['realizedPlDay', 'realized_pl_day', 'dayRealized', 'day_realized']);
       var unreal = sumPick(bal, ['unrealizedPl', 'unrealized_pl', 'unrealizedPL', 'UnrealizedProfitLoss']);
       var realized = pick(pf, 'realized') || {};
       var rTotal = num(pick(realized, 'total', 'realizedTotal', 'realized_total'));
       var wins = num(pick(realized, 'wins'));
       var losses = num(pick(realized, 'losses'));
+      /* Backend realizedSummary() already returns winRate as a percent (0–100). */
       var wr = num(pick(realized, 'winRate', 'win_rate'));
-      if (wr != null && wr <= 1) wr = wr * 100;
 
       html += '<div class="ts-stat-row">' +
         stat('Account Equity', money(equity)) +
         stat('Cash', money(cash)) +
         stat('Today’s P&amp;L', signedMoney(todays), plVar(todays)) +
-        stat('Day Realized', signedMoney(dayReal), plVar(dayReal)) +
         stat('Unrealized', signedMoney(unreal), plVar(unreal)) +
         stat('Realized (Lifetime)', signedMoney(rTotal), plVar(rTotal)) +
         stat('Win Rate', wr == null ? '—' : wr.toFixed(0) + '%', null,
           (wins != null && losses != null) ? 'W–L ' + wins + '–' + losses : '') +
       '</div>';
+      var skipped = num(pick(pf, 'skippedEquity', 'skipped_equity'));
+      if (skipped) {
+        html += '<div class="ts-caption" style="margin-top:8px">' + skipped +
+          ' non-option position' + (skipped === 1 ? '' : 's') +
+          ' at your broker (e.g. shares) ' + (skipped === 1 ? 'is' : 'are') +
+          ' not shown — this tracker follows your options book.</div>';
+      }
     }
     if (errMsg) html += '<div class="ts-error">' + escText(errMsg) + '</div>';
     html += ERR_BOX;
@@ -5915,6 +6041,7 @@ function toggleCardExpand(btn) {
       .then(function(res) {
         if (res.status === 401) { panel.style.display = 'none'; return; }
         return res.json().catch(function() { return null; }).then(function(st) {
+          lastStatus = (st && typeof st === 'object') ? st : null;
           var hasShape = st && typeof st === 'object' &&
             ('connected' in st || 'needsReconnect' in st || 'needs_reconnect' in st);
           if (!hasShape) {

@@ -1,10 +1,10 @@
 /*
  * misc.js — small endpoints the two pages touch besides positions/track/market.
  *
- * Note: there is intentionally NO /api/tradestation/* router. The portfolio page
- * keeps its "TradeStation Live" panel hidden when that route 404s, which is
- * exactly what we want in a self-hosted, broker-less build — positions are
- * entered manually / via CSV instead.
+ * The optional TradeStation link lives in routes/tradestation.js. When no
+ * account is connected the app still works exactly as before — positions are
+ * entered manually / via CSV — and the "TradeStation Live" panel simply shows
+ * its connect form.
  */
 const { Router } = require('express');
 const db = require('../lib/db');

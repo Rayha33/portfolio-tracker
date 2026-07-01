@@ -88,3 +88,28 @@ CREATE TABLE IF NOT EXISTS stocks (
   sector       TEXT,
   industry     TEXT
 );
+
+-- TradeStation connection (optional, single row id=1). Holds the OAuth app
+-- credentials the user pastes in, the tokens minted from the browser consent
+-- flow, and the last sync bookkeeping. Everything is nullable so a fresh clone
+-- boots with an empty, disconnected row and the "no API keys" default stands.
+-- Secrets are stored as-is (single-user, self-hosted machine) — see README.
+CREATE TABLE IF NOT EXISTS tradestation_auth (
+  id                       INTEGER PRIMARY KEY CHECK (id = 1),
+  client_id                TEXT,
+  client_secret            TEXT,
+  environment              TEXT NOT NULL DEFAULT 'sim'
+                             CHECK (environment IN ('live','sim')),
+  oauth_state              TEXT,           -- CSRF nonce for the in-flight authorize round-trip
+  refresh_token            TEXT,           -- long-lived; mints access tokens
+  access_token             TEXT,           -- short-lived (~20 min)
+  access_token_expires_at  INTEGER,        -- epoch ms
+  account_ids              TEXT,           -- comma-separated TradeStation account ids
+  connected                INTEGER NOT NULL DEFAULT 0,
+  needs_reconnect          INTEGER NOT NULL DEFAULT 0,
+  last_sync_at             TEXT,
+  last_error               TEXT,
+  last_balances_json       TEXT,           -- cached normalized balances for instant panel paint
+  created_at               TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at               TEXT NOT NULL DEFAULT (datetime('now'))
+);
